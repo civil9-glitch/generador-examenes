@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generador de Exámenes PDF</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+</head>
+<body>
+
+  <!-- PANTALLA: CONFIG -->
+  <div id="screen-config" class="screen active">
+    <div class="container">
+      <header>
+        <h1>Generador de exámenes</h1>
+        <p class="subtitle">Subí un PDF y generá preguntas automáticamente con IA</p>
+      </header>
+
+      <div class="card">
+        <div class="card-title">Configuración de API</div>
+        <div class="field">
+          <label for="api-key">API Key de Google Gemini</label>
+          <div class="input-row">
+            <input type="password" id="api-key" placeholder="AIza..." autocomplete="off">
+            <button class="btn-icon" onclick="toggleKey()" title="Mostrar/ocultar">👁</button>
+          </div>
+          <span class="field-hint">Gratis en <a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com</a> → Get API Key</span>
+        </div>
+        <label class="checkbox-row">
+          <input type="checkbox" id="save-key" checked>
+          <span>Guardar clave en este dispositivo</span>
+        </label>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Documento</div>
+        <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+          <div class="upload-icon">📄</div>
+          <div class="upload-text" id="upload-text">Hacé clic para subir un PDF</div>
+          <div class="upload-sub" id="upload-sub">El texto se extrae localmente en tu navegador</div>
+        </div>
+        <input type="file" id="file-input" accept=".pdf" style="display:none" onchange="handleFile(event)">
+      </div>
+
+      <div class="card">
+        <div class="card-title">Opciones del examen</div>
+        <div class="fields-row">
+          <div class="field">
+            <label for="num-q">Preguntas</label>
+            <select id="num-q">
+              <option value="20" selected>20 preguntas</option>
+              <option value="30">30 preguntas</option>
+              <option value="40">40 preguntas</option>
+              <option value="50">50 preguntas</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="timer-sel">Tiempo por pregunta</label>
+            <select id="timer-sel">
+              <option value="15">15 segundos</option>
+              <option value="30">30 segundos</option>
+              <option value="60" selected>60 segundos</option>
+              <option value="90">90 segundos</option>
+              <option value="120">2 minutos</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="status-bar" id="status-config"></div>
+      <button class="btn-primary btn-full" id="btn-generate" onclick="generateExam()" disabled>
+        Generar examen
+      </button>
+
+      <div class="card" id="history-card">
+        <div class="card-title">Historial</div>
+        <div id="history-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANTALLA: EXAMEN -->
+  <div id="screen-exam" class="screen">
+    <div class="container">
+      <div class="exam-header">
+        <div class="exam-header-left">
+          <div class="exam-title" id="exam-title-display"></div>
+          <div class="exam-meta" id="exam-meta-display"></div>
+        </div>
+        <div class="score-badge" id="score-display">0 / 100</div>
+      </div>
+      <div class="dots-row" id="dots-row"></div>
+      <div id="question-area"></div>
+    </div>
+  </div>
+
+  <!-- PANTALLA: RESULTADOS -->
+  <div id="screen-results" class="screen">
+    <div class="container">
+      <div id="results-content"></div>
+    </div>
+  </div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/pdf-extractor.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/exam.js"></script>
+  <script src="js/results.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
