@@ -1,5 +1,5 @@
 const Api = {
-  BASE_URL: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
+  BASE_URL: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
 
   async generateQuestions(apiKey, text, numQ, batchNote = '') {
     const prompt = `Sos un profesor universitario experto. Leé el siguiente texto y generá exactamente ${numQ} preguntas de opción múltiple para un examen final universitario.${batchNote}
