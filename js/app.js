@@ -91,36 +91,41 @@ const App = {
 
     const numQ = parseInt(document.getElementById('num-q').value);
     const timerSecs = parseInt(document.getElementById('timer-sel').value);
+    const totalBatches = Math.ceil(numQ / Api.BATCH_SIZE);
 
     document.getElementById('btn-generate').disabled = true;
+    this.showStatus('Generando preguntas con Gemini...', 'info', true);
+
+    const onRetry = (attempt, max, delay) => {
+      const secs = Math.round(delay / 1000);
+      this.showStatus(
+        `Servidor saturado. Reintentando en ${secs}s... (intento ${attempt} de ${max})`,
+        'info', true
+      );
+    };
+
+    const onBatchProgress = (batchNum, totalBatches) => {
+      this.showStatus(
+        `Generando preguntas — lote ${batchNum} de ${totalBatches}...`,
+        'info', true
+      );
+    };
 
     try {
-      let allQuestions = [];
-      let examTitle = this.pdfName;
+      const parsed = await Api.generateQuestions(
+        apiKey,
+        this.extractedText,
+        numQ,
+        onRetry,
+        totalBatches > 1 ? onBatchProgress : null
+      );
 
-      if (numQ <= 30) {
-        this.showStatus(`Generando ${numQ} preguntas con Gemini...`, 'info', true);
-        const parsed = await Api.generateQuestions(apiKey, this.extractedText, numQ);
-        examTitle = parsed.examTitle || this.pdfName;
-        allQuestions = parsed.questions || [];
-      } else {
-        const b1 = Math.floor(numQ / 2);
-        const b2 = numQ - b1;
-        this.showStatus(`Generando preguntas — lote 1 de 2...`, 'info', true);
-        const p1 = await Api.generateQuestions(apiKey, this.extractedText, b1,
-          ' LOTE 1/2: usá temas de la primera mitad del texto.');
-        examTitle = p1.examTitle || this.pdfName;
-        allQuestions = [...(p1.questions || [])];
-        this.showStatus(`Generando preguntas — lote 2 de 2...`, 'info', true);
-        const p2 = await Api.generateQuestions(apiKey, this.extractedText, b2,
-          ' LOTE 2/2: usá temas distintos al lote 1, segunda mitad del texto.');
-        allQuestions = [...allQuestions, ...(p2.questions || [])];
+      if (!parsed.questions || !parsed.questions.length) {
+        throw new Error('No se recibieron preguntas');
       }
 
-      if (!allQuestions.length) throw new Error('No se recibieron preguntas');
-
-      this.examQuestions = allQuestions.slice(0, numQ);
-      this.examTitle = examTitle;
+      this.examQuestions = parsed.questions.slice(0, numQ);
+      this.examTitle = parsed.examTitle || this.pdfName;
 
       this.showStatus(`✓ ${this.examQuestions.length} preguntas generadas. Iniciando...`, 'success');
       setTimeout(() => {
